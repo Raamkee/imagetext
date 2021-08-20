@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import '../Screens/DigitizeCard.dart';
 
-class TextRecognizer extends StatefulWidget {
+class TextRecognization extends StatefulWidget {
   @override
-  _TextRecognizerState createState() => _TextRecognizerState();
+  _TextRecognizationState createState() => _TextRecognizationState();
 }
 
-class _TextRecognizerState extends State<TextRecognizer> {
+class _TextRecognizationState extends State<TextRecognization> {
   TextDetector textDetector = GoogleMlKit.vision.textDetector();
+
   bool isBusy = false;
   CustomPaint customPaint;
   String passStringVal = "";

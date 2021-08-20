@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../LogicalComponents/TextRecognizer.dart';
+import '../LogicalComponents/TextRecognization.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key key}) : super(key: key);
@@ -42,7 +42,7 @@ class _HomePageState extends State<HomePage> {
               ),
               ElevatedButton(
                   onPressed: () {
-                    navigateToPage(context, TextRecognizer());
+                    navigateToPage(context, TextRecognization());
                   },
                   style: ButtonStyle(
                     shape: MaterialStateProperty.all<RoundedRectangleBorder>(
