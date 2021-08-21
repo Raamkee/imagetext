@@ -20,20 +20,36 @@ class _HomePageState extends State<HomePage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Icon(
-                    Icons.payment,
-                    size: 50,
-                    color: Colors.black54,
+                  AnimatedAlign(
+                    alignment: Alignment.centerRight,
+                    duration: const Duration(seconds: 1),
+                    curve: Curves.fastOutSlowIn,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.3,
+                      child: Icon(
+                        Icons.payment,
+                        size: 50,
+                        color: Colors.black54,
+                      ),
+                    ),
                   ),
                   Icon(
                     Icons.arrow_forward,
                     size: 25,
                     color: Colors.black54,
                   ),
-                  Icon(
-                    Icons.qr_code_scanner,
-                    size: 50,
-                    color: Colors.black54,
+                  AnimatedAlign(
+                    alignment: Alignment.centerLeft,
+                    duration: Duration(seconds: 1),
+                    curve: Curves.fastOutSlowIn,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.3,
+                      child: Icon(
+                        Icons.qr_code_scanner,
+                        size: 50,
+                        color: Colors.black54,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -54,11 +70,34 @@ class _HomePageState extends State<HomePage> {
                   child: Padding(
                     padding: const EdgeInsets.all(3.0),
                     child: Text(
-                      'Digitise Business Card!',
+                      'Digitize Business Card!',
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                   )),
+              // Center(
+              //   child: Container(
+              //     width: 250.0,
+              //     height: 250.0,
+              //     color: Colors.white,
+              //     child: AnimatedAlign(
+              //       alignment:
+              //           // selected ?
+              //           // Alignment.centerRight,
+              //           // :
+              //           Alignment.centerLeft,
+              //       duration: const Duration(seconds: 1),
+              //       curve: Curves.fastOutSlowIn,
+              //       child:
+              //           // const FlutterLogo(size: 50.0),
+              //           Icon(
+              //         Icons.qr_code_scanner,
+              //         size: 50,
+              //         color: Colors.black54,
+              //       ),
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         ));

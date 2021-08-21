@@ -2,8 +2,10 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:rive/rive.dart';
 
 enum ScreenMode { gallery }
 
@@ -44,6 +46,14 @@ class _DigitizeCardState extends State<DigitizeCard> {
   ImagePicker _imagePicker;
   int _cameraIndex = 0;
 
+  bool tapDigitize = false;
+
+  bool get isPlaying => _controller?.isActive ?? true;
+
+  bool _isPlaying = false;
+  Artboard _riveArtboard;
+  RiveAnimationController _controller;
+
   TextEditingController _nameCtlr = new TextEditingController();
   TextEditingController _mobNoCtlr = new TextEditingController();
   TextEditingController _emailCtlr = new TextEditingController();
@@ -61,6 +71,17 @@ class _DigitizeCardState extends State<DigitizeCard> {
         _cameraIndex = i;
       }
     }
+    rivAnim();
+  }
+
+  rivAnim() {
+    rootBundle.load('assets/animations/example__download_icon.riv').then(
+      (data) async {
+        final file = RiveFile.import(data);
+        final artboard = file.mainArtboard;
+        setState(() => _riveArtboard = artboard);
+      },
+    );
   }
 
   cameraUtil() async {
@@ -70,6 +91,15 @@ class _DigitizeCardState extends State<DigitizeCard> {
     } on CameraException catch (e) {
       print(e);
     }
+  }
+
+  void getLoadData() {
+    Future.delayed(const Duration(milliseconds: 6000), () {
+      setState(() {
+        tapDigitize = false;
+      });
+      setCtlrText();
+    });
   }
 
   @override
@@ -82,6 +112,7 @@ class _DigitizeCardState extends State<DigitizeCard> {
             widget.title,
             style: TextStyle(color: Colors.black54),
           ),
+          centerTitle: true,
           leading: InkWell(
             child: Icon(
               Icons.arrow_back,
@@ -93,18 +124,28 @@ class _DigitizeCardState extends State<DigitizeCard> {
           ),
         ),
         backgroundColor: Colors.white.withOpacity(0.95),
-        body: _galleryBody());
+        body: Stack(children: [
+          _galleryBody(),
+          Center(
+            child: tapDigitize ? _rivLoadAnim() : Container(),
+          ),
+        ]));
   }
 
   Widget _galleryBody() {
     return ListView(shrinkWrap: true, children: [
       _image != null
           ? Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(10.0),
               child: Container(
                 decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.white),
+                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.white,
+                  // boxShadow: [
+                  //   BoxShadow(
+                  //       color: Colors.grey.withOpacity(0.3), blurRadius: 8)
+                  // ],
+                ),
                 height: MediaQuery.of(context).size.width * 0.6,
                 width: MediaQuery.of(context).size.width * 1,
                 child: Stack(
@@ -116,11 +157,16 @@ class _DigitizeCardState extends State<DigitizeCard> {
               ),
             )
           : Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(10.0),
               child: Container(
                 decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.white),
+                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.white,
+                  // boxShadow: [
+                  //   BoxShadow(
+                  //       color: Colors.grey.withOpacity(0.3), blurRadius: 8)
+                  // ],
+                ),
                 height: MediaQuery.of(context).size.width * 0.6,
                 width: MediaQuery.of(context).size.width * 1,
                 child: Icon(
@@ -157,8 +203,13 @@ class _DigitizeCardState extends State<DigitizeCard> {
                   height: MediaQuery.of(context).size.width * 0.4,
                   width: MediaQuery.of(context).size.width * 0.4,
                   decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Colors.white),
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.grey.withOpacity(0.3), blurRadius: 8)
+                    ],
+                  ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -187,8 +238,13 @@ class _DigitizeCardState extends State<DigitizeCard> {
                   height: MediaQuery.of(context).size.width * 0.4,
                   width: MediaQuery.of(context).size.width * 0.4,
                   decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Colors.white),
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.grey.withOpacity(0.3), blurRadius: 8)
+                    ],
+                  ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -220,58 +276,66 @@ class _DigitizeCardState extends State<DigitizeCard> {
         padding: const EdgeInsets.all(15.0),
         child: Divider(),
       ),
-      Padding(
-        padding: const EdgeInsets.fromLTRB(8, 15, 8, 15),
-        child: InkWell(
-          child: Container(
-            alignment: Alignment.center,
+      Stack(children: [
+        _animatedStackOne(),
+        _animatedStackTwo(),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(8, 15, 8, 15),
+          child: InkWell(
             child: Container(
               alignment: Alignment.center,
-              height: MediaQuery.of(context).size.width * 0.15,
-              width: MediaQuery.of(context).size.width * 0.85,
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10), color: Colors.white),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.qr_code_scanner,
-                    color: Colors.black54,
-                  ),
-                  SizedBox(
-                    width: 30,
-                  ),
-                  Text(
-                    'Digitize',
+              child: Container(
+                alignment: Alignment.center,
+                height: MediaQuery.of(context).size.width * 0.15,
+                width: MediaQuery.of(context).size.width * 0.40,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  // color: Colors.white,
+                  // boxShadow: [BoxShadow(color: Colors.grey, blurRadius: 2)],
+                ),
+                child: AnimatedAlign(
+                  alignment: tapDigitize
+                      ? Alignment.centerLeft
+                      : Alignment.centerRight,
+                  duration: Duration(seconds: 1),
+                  child: Text(
+                    tapDigitize ? 'Digitizing...' : 'Digitize',
                     style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.black54,
                         fontSize: 18),
                   ),
-                ],
+                ),
               ),
             ),
+            onTap: () {
+              setState(() {
+                tapDigitize = true;
+              });
+              getLoadData();
+              _launchRocket();
+              // setCtlrText();
+              print(widget.getName +
+                  widget.getMobNo +
+                  widget.getEmail +
+                  widget.getAddress +
+                  widget.getWebsite);
+              print('object');
+            },
           ),
-          onTap: () {
-            setCtlrText();
-            print(widget.getName +
-                widget.getMobNo +
-                widget.getEmail +
-                widget.getAddress +
-                widget.getWebsite);
-          },
         ),
-      ),
+      ]),
+      // tapDigitize ? _rivLoadAnim() : Container(),
       Padding(
         padding: const EdgeInsets.all(15.0),
         child: Divider(),
       ),
       Padding(
-        padding: const EdgeInsets.fromLTRB(8, 25, 8, 25),
+        padding: const EdgeInsets.fromLTRB(10, 25, 10, 25),
         child: _editVisitingCard(),
       ),
       Padding(
-        padding: const EdgeInsets.fromLTRB(8, 25, 8, 25),
+        padding: const EdgeInsets.fromLTRB(10, 25, 10, 25),
         child: Stack(children: [
           _updatedCard(),
           _updatedCardStackTwo(),
@@ -284,7 +348,12 @@ class _DigitizeCardState extends State<DigitizeCard> {
   Widget _editVisitingCard() {
     return Container(
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10), color: Colors.white),
+        borderRadius: BorderRadius.circular(10),
+        color: Colors.white,
+        // boxShadow: [
+        //   BoxShadow(color: Colors.grey.withOpacity(0.3), blurRadius: 8)
+        // ],
+      ),
       padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
       child: Column(
         children: [
@@ -312,6 +381,7 @@ class _DigitizeCardState extends State<DigitizeCard> {
   Widget _textField(getTxtCtlr, getLableTxt) {
     return TextFormField(
       controller: getTxtCtlr,
+      style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
       decoration: InputDecoration(
           labelText: getLableTxt, labelStyle: TextStyle(color: Colors.black54)),
     );
@@ -443,16 +513,13 @@ class _DigitizeCardState extends State<DigitizeCard> {
   Widget _updatedCardStackTwo() {
     return Container(
       alignment: Alignment.bottomRight,
-      // padding: EdgeInsets.all(5),
       height: MediaQuery.of(context).size.width * 0.6,
       width: MediaQuery.of(context).size.width * 1,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(3),
-        // color: Colors.white,
       ),
       child: Container(
         height: 20,
-        // width: MediaQuery.of(context).size.width * 0.6,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.only(
                 bottomRight: Radius.circular(3),
@@ -479,7 +546,6 @@ class _DigitizeCardState extends State<DigitizeCard> {
       width: MediaQuery.of(context).size.width * 1,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(3),
-        // color: Colors.white,
       ),
       child: Column(
         children: [
@@ -487,53 +553,12 @@ class _DigitizeCardState extends State<DigitizeCard> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ListTile(
-                //   visualDensity: VisualDensity(horizontal: -4, vertical: -4),
-                //   title: Text(
-                //     _nameCtlr.text,
-                //     style: TextStyle(
-                //         color: Colors.blue,
-                //         fontWeight: FontWeight.bold,
-                //         fontSize: 20),
-                //   ),
-                // ),
-                // ListTile(
-                //   visualDensity: VisualDensity(horizontal: -4, vertical: -4),
-                //   leading: Icon(Icons.phone),
-                //   title: Text(
-                //     _mobNoCtlr.text,
-                //     style: TextStyle(
-                //         color: Colors.blue, fontWeight: FontWeight.w400),
-                //   ),
-                // ),
-                // ListTile(
-                //   visualDensity: VisualDensity(horizontal: -4, vertical: -4),
-                //   leading: Icon(Icons.place),
-                //   title: Text(
-                //     _addressCtlr.text,
-                //     style: TextStyle(
-                //         color: Colors.blue, fontWeight: FontWeight.w400),
-                //   ),
-                // ),
-                // ListTile(
-                //   visualDensity: VisualDensity(horizontal: -4, vertical: -4),
-                //   leading: Icon(Icons.email),
-                //   title: Text(
-                //     _emailCtlr.text,
-                //     style: TextStyle(
-                //         color: Colors.blue, fontWeight: FontWeight.w400),
-                //   ),
-                // ),
-              ],
+              children: [],
             ),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              // Icon(
-              //   Icons.circle,
-              // ),
               SizedBox(
                 width: 5,
               ),
@@ -548,6 +573,113 @@ class _DigitizeCardState extends State<DigitizeCard> {
           )
         ],
       ),
+    );
+  }
+
+  Widget _animatedContent() {
+    return Center(
+      child: Container(
+        width: 250.0,
+        height: 250.0,
+        color: Colors.white,
+        child: AnimatedAlign(
+          alignment: tapDigitize ? Alignment.centerRight : Alignment.centerLeft,
+          duration: const Duration(seconds: 1),
+          curve: Curves.fastOutSlowIn,
+          child:
+              // const FlutterLogo(size: 50.0),
+              Icon(
+            Icons.qr_code_scanner,
+            size: 50,
+            color: Colors.black54,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _animatedStackOne() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 15, 8, 15),
+      child: Container(
+        alignment: Alignment.center,
+        child: Container(
+          alignment: Alignment.center,
+          height: MediaQuery.of(context).size.width * 0.15,
+          width: MediaQuery.of(context).size.width * 0.85,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(color: Colors.grey.withOpacity(0.3), blurRadius: 8)
+            ],
+          ),
+          // child: AnimatedAlign(
+          //   alignment:
+          //       tapDigitize ? Alignment.centerRight : Alignment.centerLeft,
+          //   duration: const Duration(seconds: 1),
+          //   curve: Curves.fastOutSlowIn,
+          //   child: Icon(
+          //     Icons.qr_code_scanner,
+          //     color: Colors.black54,
+          //   ),
+          // ),
+        ),
+      ),
+    );
+  }
+
+  Widget _animatedStackTwo() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 15, 8, 15),
+      child: Container(
+        alignment: Alignment.center,
+        child: Container(
+          alignment: Alignment.center,
+          height: MediaQuery.of(context).size.width * 0.15,
+          width: MediaQuery.of(context).size.width * 0.40,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: Colors.white,
+          ),
+          child: AnimatedAlign(
+            alignment:
+                tapDigitize ? Alignment.centerRight : Alignment.centerLeft,
+            duration: const Duration(seconds: 1),
+            curve: Curves.fastOutSlowIn,
+            child: Icon(
+              Icons.qr_code_scanner,
+              color: Colors.black54,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _rivLoadAnim() {
+    return Container(
+      padding: EdgeInsets.all(2),
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(color: Colors.grey.withOpacity(0.5), blurRadius: 10)
+          ]),
+      height: 125,
+      width: 125,
+      child: _riveArtboard == null
+          ? const SizedBox()
+          : Rive(
+              artboard: _riveArtboard,
+            ),
+    );
+  }
+
+  void _launchRocket() {
+    print('object-----');
+    _riveArtboard.addController(
+      _controller = SimpleAnimation('Demo', autoplay: isPlaying),
     );
   }
 

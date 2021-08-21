@@ -30,7 +30,7 @@ class _TextRecognizationState extends State<TextRecognization> {
   @override
   Widget build(BuildContext context) {
     return DigitizeCard(
-      title: 'Digitize Card',
+      title: 'Digitize V-Cards',
       customPaint: customPaint,
       onImage: (inputImage) {
         processImage(inputImage);
