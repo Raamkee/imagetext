@@ -37,6 +37,10 @@ dependencies:
   google_ml_kit:
   image_picker:
   rive:
+  # simple_permissions:
+  image_gallery_saver:
+  permission_handler:
+  share:
  
 
 dev_dependencies:
@@ -57,6 +61,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/animations/
+    - assets/images/    
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

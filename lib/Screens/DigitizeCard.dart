@@ -1,11 +1,19 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui';
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:rive/rive.dart';
+// import 'package:simple_permissions/simple_permissions.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:share/share.dart';
 
 enum ScreenMode { gallery }
 
@@ -54,12 +62,97 @@ class _DigitizeCardState extends State<DigitizeCard> {
   Artboard _riveArtboard;
   RiveAnimationController _controller;
 
+  String vCardImgPath = "";
+
+  List<String> vCardImgPathList = [
+    "/storage/emulated/0/Pictures/1629630165636.jpg"
+  ];
+  File currentFile;
+
+  bool loadImage = false;
+
   TextEditingController _nameCtlr = new TextEditingController();
   TextEditingController _mobNoCtlr = new TextEditingController();
   TextEditingController _emailCtlr = new TextEditingController();
   TextEditingController _addressCtlr = new TextEditingController();
   TextEditingController _websiteCtlr = new TextEditingController();
 // TextEditingController _nameCtlr=new TextEditingController();
+
+  GlobalKey globalKey = GlobalKey();
+
+//   Future<void> _capturePng() async {
+//     RenderRepaintBoundary boundary =
+//         globalKey.currentContext.findRenderObject();
+
+//     ui.Image image = await boundary.toImage();
+//     ByteData byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+//     Uint8List pngBytes = byteData.buffer.asUint8List();
+//     print(pngBytes);
+//   }
+
+// Future<ui.Image> toImage({ double pixelRatio = 1.0 }) {
+//   assert(!debugNeedsPaint);
+//   final OffsetLayer offsetLayer = layer! as OffsetLayer;
+//   return offsetLayer.toImage(Offset.zero & size, pixelRatio: pixelRatio);
+// }
+
+  Future<Uint8List> _capturePng() async {
+    print('capture...');
+    RenderRepaintBoundary boundary =
+        globalKey.currentContext.findRenderObject();
+
+    if (boundary.debugNeedsPaint) {
+      print("Waiting for boundary to be painted.");
+      await Future.delayed(const Duration(milliseconds: 20));
+      return _capturePng();
+    }
+
+    var image = await boundary.toImage(pixelRatio: 3.0);
+    var byteData = await image.toByteData(format: ImageByteFormat.png);
+    return byteData.buffer.asUint8List();
+  }
+
+  void _printPngBytes() async {
+    var pngBytes = await _capturePng();
+    var bs64 = base64Encode(pngBytes);
+    print(pngBytes);
+    print(bs64);
+    // vCardImgPath=
+    _createFileFromString(bs64);
+  }
+
+  Future<String> _createFileFromString(getbsData) async {
+    Uint8List bytes = base64.decode(getbsData);
+    String dir = (await getApplicationDocumentsDirectory()).path;
+    String fullPath = '$dir/abc.png';
+    print("local file full path: " + fullPath);
+    File file = File(fullPath);
+    await file.writeAsBytes(bytes);
+    print(file.path);
+    setState(() {
+      vCardImgPath = file.path;
+      currentFile = file;
+      print(vCardImgPath);
+    });
+    print(vCardImgPath);
+    final result = await ImageGallerySaver.saveImage(bytes);
+    print(result);
+    setState(() {
+      // vCardImgPath = result['filePath'];
+      vCardImgPath = file.path;
+      // vCardImgPath = "/storage/emulated/0/Pictures/1629624092166.jpg";
+      print(vCardImgPath);
+      // vCardImgPathList.add("/storage/emulated/0/Pictures/1629630165636.jpg");
+      vCardImgPathList.add(vCardImgPath);
+      print('added to list');
+      print('vCardImgPathList to loist ------');
+      print(vCardImgPathList[0]);
+      loadImage = true;
+      print(vCardImgPathList.toString());
+    });
+
+    return file.path;
+  }
 
   @override
   void initState() {
@@ -73,6 +166,15 @@ class _DigitizeCardState extends State<DigitizeCard> {
     }
     rivAnim();
   }
+
+//   bool get debugNeedsPaint {
+//    bool result;
+//   assert(() {
+//     result = _needsPaint;
+//     return true;
+//   }());
+//   return result;
+// }
 
   rivAnim() {
     rootBundle.load('assets/animations/example__download_icon.riv').then(
@@ -104,6 +206,7 @@ class _DigitizeCardState extends State<DigitizeCard> {
 
   @override
   Widget build(BuildContext context) {
+    // SimplePermissions.requestPermission(Permission.WriteExternalStorage);
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.white.withOpacity(0.05),
@@ -334,14 +437,166 @@ class _DigitizeCardState extends State<DigitizeCard> {
         padding: const EdgeInsets.fromLTRB(10, 25, 10, 25),
         child: _editVisitingCard(),
       ),
+      // Padding(
+      //   padding: const EdgeInsets.fromLTRB(10, 25, 10, 25),
+      //   child: Stack(children: [
+      //     _updatedCard(),
+      //     _updatedCardStackTwo(),
+      //     _updatedCardStackFour(),
+      //   ]),
+      // ),
       Padding(
         padding: const EdgeInsets.fromLTRB(10, 25, 10, 25),
-        child: Stack(children: [
-          _updatedCard(),
-          _updatedCardStackTwo(),
-          _updatedCardStackFour(),
-        ]),
+        child: _cardOutput(),
       ),
+      // _cardOutput(),
+      // _exportBtn(),
+
+      !loadImage
+          ? _printImgByteDataBtn()
+          : Center(
+              child: Container(
+                // padding: EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    // color: Colors.grey,
+                    border: Border.all(
+                      color: Colors.grey,
+                    )),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    'Card is Saved in Gallery!',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black54,
+                        fontSize: 14),
+                  ),
+                ),
+              ),
+            ),
+      loadImage
+          ? Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Center(
+                child: Container(
+                    padding: EdgeInsets.fromLTRB(10, 10, 0, 10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: Colors.white,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _loadIMagefromPath(),
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              InkWell(
+                                  child: Container(
+                                    height: MediaQuery.of(context).size.width *
+                                        0.12,
+                                    width: MediaQuery.of(context).size.width *
+                                        0.12,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(5),
+                                      color: Colors.white,
+                                      boxShadow: [
+                                        BoxShadow(
+                                            color: Colors.grey.withOpacity(0.5),
+                                            blurRadius: 3)
+                                      ],
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.share,
+                                          color: Colors.grey,
+                                          size: 22,
+                                        ),
+                                        SizedBox(
+                                          height: 2,
+                                        ),
+                                        Text(
+                                          'Share',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.grey,
+                                              fontSize: 12),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  onTap: () => _shareImage()),
+                              SizedBox(
+                                height:
+                                    MediaQuery.of(context).size.width * 0.12,
+                              ),
+                              InkWell(
+                                  child: Container(
+                                    height: MediaQuery.of(context).size.width *
+                                        0.12,
+                                    width: MediaQuery.of(context).size.width *
+                                        0.12,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(5),
+                                      color: Colors.white,
+                                      boxShadow: [
+                                        BoxShadow(
+                                            color: Colors.grey.withOpacity(0.5),
+                                            blurRadius: 3)
+                                      ],
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.open_in_new,
+                                          color: Colors.grey,
+                                          size: 22,
+                                        ),
+                                        SizedBox(
+                                          height: 2,
+                                        ),
+                                        Text(
+                                          'Open',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.grey,
+                                              fontSize: 12),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  onTap: () => _shareImage()),
+                            ],
+                          ),
+                        ),
+                      ],
+                    )),
+              ),
+            )
+          : Text('no image'),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Container(
+          alignment: Alignment.center,
+          child: Container(
+            height: 5,
+            width: 30,
+            decoration: BoxDecoration(
+              color: Colors.grey.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(30),
+            ),
+          ),
+        ),
+      ),
+      // _shareImg(),
     ]);
   }
 
@@ -653,6 +908,126 @@ class _DigitizeCardState extends State<DigitizeCard> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _cardOutput() {
+    return RepaintBoundary(
+      key: globalKey,
+      child: Stack(children: [
+        _updatedCard(),
+        _updatedCardStackTwo(),
+        _updatedCardStackFour(),
+      ]),
+    );
+  }
+
+  Widget _exportBtn() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ElevatedButton(
+          onPressed: () {
+            print('exporting...');
+            _capturePng();
+
+// _printPngBytes();
+          },
+          child: Text('Export')),
+    );
+  }
+
+  Widget _printImgByteDataBtn() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ElevatedButton(
+          onPressed: () {
+// _capturePng();
+
+            _printPngBytes();
+          },
+          child: Text('Save Card')),
+    );
+  }
+
+  Widget _shareImg() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ElevatedButton(
+          onPressed: () {
+// _capturePng();
+
+            _shareImage();
+          },
+          child: Text('Share')),
+    );
+  }
+
+  // _shareImage() async {
+  //   try {
+  //     final ByteData bytes =
+  //         await rootBundle.load('assets/images/Screenshot_1624688004.png');
+  //     // final ByteData bytes = await Image.file(File(vCardImgPath)).image;
+  //     final Uint8List list = bytes.buffer.asUint8List();
+  //     final tempDir = await getTemporaryDirectory();
+  //     final file = await new File('${tempDir.path}/image.jpg').create();
+  //     file.writeAsBytesSync(list);
+  //     final channel = const MethodChannel('channel:me.albie.share/share');
+  //     channel.invokeMethod('shareFile', 'image.jpg');
+  //   } catch (e) {
+  //     print('Share error: $e');
+  //   }
+  // }
+
+  _shareImage() async {
+    // print(vCardImgPathList[0]);
+    final RenderBox box = context.findRenderObject() as RenderBox;
+    if (Platform.isAndroid) {
+      if (vCardImgPath.isNotEmpty) {
+        await
+            // Share.shareFiles(vCardImgPathList,
+            //     text: 'text',
+            //     subject: 'subject',
+            //     sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size);
+
+            // Share.shareFiles(['/storage/emulated/0/Pictures/1629624092166.jpg'],
+            Share.shareFiles([vCardImgPath], text: 'Great picture');
+      } else {
+        await Share.share('text',
+            subject: 'subject',
+            sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size);
+      }
+    }
+    // final RenderBox box = context.findRenderObject();
+    // if (Platform.isAndroid) {
+    //   var url = 'https://i.ytimg.com/vi/fq4N0hgOWzU/maxresdefault.jpg';
+    //   var response = await get(url);
+    //   final documentDirectory = (await getExternalStorageDirectory()).path;
+    //   File imgFile = new File('$documentDirectory/flutter.png');
+    //   imgFile.writeAsBytesSync(response.bodyBytes);
+
+    //   Share.shareFiles(vCardImgPathList,
+    //       subject: 'URL File Share',
+    //       text: 'Hello, check your share files!',
+    //       sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size);
+    // } else {
+    //   Share.share('Hello, check your share files!',
+    //       subject: 'URL File Share',
+    //       sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size);
+    // }
+  }
+
+  Widget _loadIMagefromPath() {
+    return Center(
+      child: Container(
+        height: MediaQuery.of(context).size.width * 0.42,
+        width: MediaQuery.of(context).size.width * 0.65,
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(3),
+            // color: Colors.white,
+            boxShadow: [
+              BoxShadow(color: Colors.grey.withOpacity(0.3), blurRadius: 5)
+            ]),
+        child: Image.file(File(vCardImgPath)),
       ),
     );
   }
