@@ -79,16 +79,21 @@ class _HomePageState extends State<HomePage> {
                   style: ButtonStyle(
                     shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                       RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18.0),
+                        borderRadius: BorderRadius.circular(30.0),
                       ),
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(3.0),
-                    child: Text(
-                      'Digitize Business Card!',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  child: Container(
+                    alignment: Alignment.center,
+                    width: MediaQuery.of(context).size.width * 0.5,
+                    height: 45,
+                    child: Padding(
+                      padding: const EdgeInsets.all(3.0),
+                      child: Text(
+                        'Digitize Business Card!',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
                     ),
                   )),
               // Center(

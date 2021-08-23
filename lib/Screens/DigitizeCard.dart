@@ -581,7 +581,8 @@ class _DigitizeCardState extends State<DigitizeCard> {
                     )),
               ),
             )
-          : Text('no image'),
+          : Container(),
+      // Text('no image'),
       Padding(
         padding: const EdgeInsets.all(8.0),
         child: Container(
@@ -939,14 +940,43 @@ class _DigitizeCardState extends State<DigitizeCard> {
 
   Widget _printImgByteDataBtn() {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(10.0),
       child: ElevatedButton(
-          onPressed: () {
+        style: ButtonStyle(
+            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30.0),
+        ))),
+        onPressed: () {
 // _capturePng();
 
+          if (_nameCtlr.text != "" &&
+              _mobNoCtlr.text != "" &&
+              _addressCtlr.text != "" &&
+              _emailCtlr.text != "" &&
+              _websiteCtlr.text != "")
             _printPngBytes();
-          },
-          child: Text('Save Card')),
+          else {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(
+              'Please Fill all Details',
+              textAlign: TextAlign.center,
+            )));
+            print('');
+          }
+        },
+        child: Container(
+          alignment: Alignment.center,
+          height: 55,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              'Save Card',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -991,7 +1021,7 @@ class _DigitizeCardState extends State<DigitizeCard> {
             //     sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size);
 
             // Share.shareFiles(['/storage/emulated/0/Pictures/1629624092166.jpg'],
-            Share.shareFiles([vCardImgPath], text: 'Great picture');
+            Share.shareFiles([vCardImgPath], text: 'Sharing Virtual Card');
       } else {
         await Share.share('text',
             subject: 'subject',
