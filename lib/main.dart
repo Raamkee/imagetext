@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:imagetext/Screens/HomePage.dart';
+import 'package:imagetext/Screens/home_page.dart';
 import 'package:rive/rive.dart';
 
 void main() => runApp(MyApp());

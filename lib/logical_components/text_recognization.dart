@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
-import '../Screens/DigitizeCard.dart';
+import '../Screens/digitize_card.dart';
 
 class TextRecognization extends StatefulWidget {
   @override

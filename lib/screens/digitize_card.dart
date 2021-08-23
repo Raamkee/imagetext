@@ -9,6 +9,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:imagetext/Screens/view_card.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:rive/rive.dart';
 // import 'package:simple_permissions/simple_permissions.dart';
@@ -537,43 +538,46 @@ class _DigitizeCardState extends State<DigitizeCard> {
                                     MediaQuery.of(context).size.width * 0.12,
                               ),
                               InkWell(
-                                  child: Container(
-                                    height: MediaQuery.of(context).size.width *
-                                        0.12,
-                                    width: MediaQuery.of(context).size.width *
-                                        0.12,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(5),
-                                      color: Colors.white,
-                                      boxShadow: [
-                                        BoxShadow(
-                                            color: Colors.grey.withOpacity(0.5),
-                                            blurRadius: 3)
-                                      ],
-                                    ),
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.open_in_new,
-                                          color: Colors.grey,
-                                          size: 22,
-                                        ),
-                                        SizedBox(
-                                          height: 2,
-                                        ),
-                                        Text(
-                                          'Open',
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.grey,
-                                              fontSize: 12),
-                                        ),
-                                      ],
-                                    ),
+                                child: Container(
+                                  height:
+                                      MediaQuery.of(context).size.width * 0.12,
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.12,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(5),
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                          color: Colors.grey.withOpacity(0.5),
+                                          blurRadius: 3)
+                                    ],
                                   ),
-                                  onTap: () => _shareImage()),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.open_in_new,
+                                        color: Colors.grey,
+                                        size: 22,
+                                      ),
+                                      SizedBox(
+                                        height: 2,
+                                      ),
+                                      Text(
+                                        'Open',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.grey,
+                                            fontSize: 12),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                onTap: () =>
+                                    //  _shareImage(),
+                                    navigateToPage(context,
+                                        ViewCard(getImg: vCardImgPath)),
+                              ),
                             ],
                           ),
                         ),
@@ -945,7 +949,7 @@ class _DigitizeCardState extends State<DigitizeCard> {
         style: ButtonStyle(
             shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                 RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30.0),
+          borderRadius: BorderRadius.circular(5.0),
         ))),
         onPressed: () {
 // _capturePng();
@@ -958,21 +962,27 @@ class _DigitizeCardState extends State<DigitizeCard> {
             _printPngBytes();
           else {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                backgroundColor: Colors.white,
+                elevation: 10,
                 content: Text(
-              'Please Fill all Details',
-              textAlign: TextAlign.center,
-            )));
+                  'Please Fill all Details',
+                  style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 16),
+                  textAlign: TextAlign.center,
+                )));
             print('');
           }
         },
         child: Container(
           alignment: Alignment.center,
-          height: 55,
+          height: 50,
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
               'Save Card',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              style: TextStyle(fontWeight: FontWeight.w500, fontSize: 20),
             ),
           ),
         ),
@@ -1104,5 +1114,11 @@ class _DigitizeCardState extends State<DigitizeCard> {
     });
     final inputImage = InputImage.fromFilePath(pickedFile.path);
     widget.onImage(inputImage);
+  }
+
+  navigateToPage(getContext, getPage) {
+    Navigator.of(getContext).push(MaterialPageRoute(
+      builder: (getContext) => getPage,
+    ));
   }
 }

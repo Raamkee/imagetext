@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../LogicalComponents/TextRecognization.dart';
+import 'package:imagetext/logical_components/text_recognization.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class HomePage extends StatefulWidget {
